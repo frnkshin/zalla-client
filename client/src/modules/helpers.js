@@ -9,3 +9,12 @@ export const isValidUrl = (string) => {
     return false;
   }
 };
+
+export const toSeconds = (minutes, seconds) => { return (minutes * 60) + seconds; };
+
+export const toMinutesAndSeconds = (seconds) => {
+  let mins = seconds / 60;
+  let secs = seconds % 60;
+
+  return {minutes: mins, seconds: secs};
+};

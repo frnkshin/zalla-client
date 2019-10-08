@@ -10,11 +10,11 @@ router.get('/links', (req, res) => {
   });
 });
 
-
 router.get('/link/', (req, res) => {
   const {word} = req.body;
   Link.findOne({word: word}, (err, data) => {
     if (err) return res.json({success: false, error: err});
+    console.log(data.updatedAt);
     if (pastHour(data.updatedAt)) {
       return res.json({success: false, error: "The word is expired"})
     }
@@ -23,30 +23,30 @@ router.get('/link/', (req, res) => {
 });
 
 router.post('/link', (req, res) => {
-  const {word, url} = req.body;
-  const link = Link({word: word, url: url});
-
-  Link.findOne({word: word}, (err, data) => {
-    if (data) {
-      if (pastHour(data.updatedAt)) {
-        Link.update({_id: data._id}, {$set: {url: link.url}}, {upsert: true}, err => {
-          if (err) {
-            return res.status(500).json({success: false, error: err});
-          }
-          return res.status(200).json({success: true, word: word, url: url, updatedAt: data.updatedAt});
-        });
-      } else {
-        return res.status(500).json({success: false, error: "duplicate value"});
+  const serveLink = (link) => res.status(200).json({success: true, ... link});
+  const serveBadRequest = (err) => res.status(400).json({success: false, error: err});
+  const serveError = (err) => res.status(500).json({success: false, error: err});
+  const getLastHourQuery = (word) => {
+    return {
+      word: word,
+      updatedAt: {
+        $gt: new Date(Date.now() - (60*60) * 1000)
       }
-    } else {
-      link.save(err => {
-        if (err) {
-          return res.status(500).json({success: false, error: err});
-        }
-        return res.status(200).json({success: true, word: word, url: url, updatedAt: Date.now()});
-      });
     }
-  });
+  };
+
+  const {word, url} = req.body;
+  const query = Link.findOne(getLastHourQuery(word)).exec();
+  query
+    .then(link => link ? Promise.reject(link) : null)
+    .then(() => {
+      Link
+        .findOneAndUpdate({word: word}, {url: url}, {upsert: true, new: true})
+        .exec()
+        .then(link => link ? serveLink(link) : Promise.reject("Internal Error: Failed to update"))
+        .catch(err => serveError(err));
+    })
+    .catch(err => err.word ? serveBadRequest(err) : serveError(err));
 });
 
 router.delete('/link', (req, res) => {

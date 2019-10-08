@@ -1,46 +1,23 @@
 import {ON_INIT, ON_TICK} from "components/Timer/types";
 
 export const initialize = date => {
-  const getRemainingTime = () => {
-    let now = Date.now();
-    let then = Date.parse(date);
-    let diffInSeconds = (now - then) / 1000;
-    if (diffInSeconds < 3600) {
-      minutes = diffInSeconds / 60;
-      seconds = diffInSeconds % 60;
-      return {minutes: minutes, seconds: seconds};
-    }
-    return {minutes: 0, seconds: 0};
+  const getSecondsRemaining = (date) => {
+    let updatedAt = Date.parse(date);
+    let expireAt = updatedAt + (3600 * 1000);
+    let secondsRemaining = Math.floor((expireAt - updatedAt) / 1000);
+    if (secondsRemaining > 0) return secondsRemaining;
+    else return 0;
   };
-
-  let {minutes, seconds} = getRemainingTime();
 
   return {
     type: ON_INIT,
-    minutes: minutes,
-    seconds: seconds,
+    secondsRemaining: getSecondsRemaining(date),
   };
 };
 
-export const tick = (minutes, seconds) => {
-  if (minutes === 0) {
-    if (seconds === 0) {
-      seconds = 0
-    } else {
-      seconds = seconds - 1;
-    }
-  } else {
-    if (seconds === 0) {
-      minutes = minutes - 1;
-      seconds = 59
-    } else {
-      seconds = seconds - 1;
-    }
-  }
-
+export const tick = (secondsRemaining) => {
   return {
     type: ON_TICK,
-    minutes: minutes,
-    seconds: seconds,
+    secondsRemaining: secondsRemaining - 1,
   }
 };

@@ -10,7 +10,7 @@ export const createLink = (word, url) => {
           resolve(res);
         })
         .catch(err => {
-          reject(err);
+          reject(err.response);
         });
     }, 2000);
   });
@@ -22,6 +22,7 @@ export const getLink = (word) => {
     setTimeout(() => {
       Axios.get(`${SERVER_URL}/api/link`, data)
         .then(res => {
+          console.log(res);
           resolve(res);
         })
         .catch(err => {

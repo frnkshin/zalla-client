@@ -15,18 +15,17 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: '100%',
     transform: `translate(-50%, -50%)`
   }
 }));
 
-const Root = () => {
+const Root = (props) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
       <MainBar/>
       <div className={classes.content}>
-        <ShortenerForm />
+        <ShortenerForm/>
       </div>
     </div>
   );

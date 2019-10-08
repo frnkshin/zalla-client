@@ -17,9 +17,9 @@ const routes = (
         <Switch>
           <Route exact={true}
                  path="/"
-                 component={Root}/>
+                 component={() => <Root showStatus={false}/>} />
           <Route path="/results/:word"
-                 component={Root}/>
+                 component={() => <Root showStatus={true}/>} />
           <Route path="/:word"
                  component={Linker}/>
         </Switch>

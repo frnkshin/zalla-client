@@ -5,17 +5,19 @@ import {withRouter} from 'react-router-dom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
 import Box from "@material-ui/core/Box";
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faLink} from "@fortawesome/free-solid-svg-icons";
 import {makeStyles} from "@material-ui/core";
+import {Card, CardContent, CardActions} from "@material-ui/core";
+import {Typography} from "@material-ui/core";
+
+import {createLink} from "modules/moongo";
+import {isValidUrl} from "modules/helpers";
+
 import LinkBox from "components/LinkBox/LinkBox";
 import CopyButton from "components/CopyButton";
 import Timer from "components/Timer/Timer";
 
-import {createLink} from "modules/moongo";
-import {isValidUrl} from "modules/helpers";
 import {setLabel, setError} from "components/LinkBox/actions";
-import {setShortUrl, setStatus} from "components/Form/actions";
+import {setShortUrl, setLongUrl, setStatus} from "components/Form/actions";
 import {initialize} from "components/Timer/actions";
 
 const useStyles = makeStyles(theme => ({
@@ -24,9 +26,19 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: "#5b6bc0",
     width: '20vh',
   },
+  card: {
+    width: '60em'
+  },
+  title: {
+    fontSize: 14,
+    left: 0,
+  },
+  pos: {
+    marginBottom: 12,
+  },
   textField: {
     paddingBottom: '2vh',
-  }
+  },
 }));
 
 const ShortenerForm = props => {
@@ -48,9 +60,10 @@ const ShortenerForm = props => {
         props.setStatus('loading');
         let res = await createLink(props.ShortUrlField.text, props.LongUrlField.text);
         if (res.data.success) {
-          console.log(res.data);
-          props.setShortUrl(`https://zal.la/${res.data.word}`);
-          props.history.push(`/results/${res.data.word}`);
+          props.setShortUrl(`https://zal.la/${res.data._doc.word}`);
+          props.setLongUrl(res.data._doc.url);
+          props.initializeTimer(res.data._doc.updatedAt);
+          props.history.push(`/results/${res.data._doc.word}`);
           props.setStatus('complete');
         }
       } catch {
@@ -96,14 +109,23 @@ const ShortenerForm = props => {
   );
 
   const renderResults = (
-    <div>
-      <FontAwesomeIcon icon={faLink}/>
-      &nbsp;
-      {props.shortUrl}
-      &nbsp;
-      <Timer />
-      <CopyButton url={props.shortUrl} text="Copy to clipboard"/>
-    </div>
+    <Card className={classes.card}>
+      <CardContent>
+        <Typography className={classes.title} color="textSecondary" gutterBottom>
+          Short URL
+        </Typography>
+        <Typography variant="h5" component="h2">
+          {props.shortUrl}
+        </Typography>
+        <Typography className={classes.pos} color="textSecondary">
+          {props.longUrl}
+        </Typography>
+        <Timer />
+      </CardContent>
+      <CardActions>
+        <CopyButton url={props.shortUrl} text="Copy" />
+      </CardActions>
+    </Card>
   );
 
   return (
@@ -129,8 +151,7 @@ const mapStateToProps = (state) => {
     },
     status: state.ShortenerForm.status,
     shortUrl: state.ShortenerForm.shortUrl,
-    redirect: state.ShortenerForm.redirect,
-    redirectTo: state.ShortenerForm.redirectTo,
+    longUrl: state.ShortenerForm.longUrl,
   }
 };
 
@@ -140,7 +161,8 @@ const mapDispatchToProps = (dispatch) => {
     setError: (namespace, isError) => dispatch(setError(namespace, isError)),
     setStatus: status => dispatch(setStatus(status)),
     setShortUrl: url => dispatch(setShortUrl(url)),
-    initializeTimer: date => dispatch(initialize(date)),
+    setLongUrl: url => dispatch(setLongUrl(url)),
+    initializeTimer: (date) => dispatch(initialize(date)),
   };
 };
 
