@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 
 import MainBar from "components/MainBar";
-import UrlBox from "components/UrlBox/UrlBox";
+import UrlBox from "components/Form/Form";
 import {Redirect} from "react-router";
 import {makeStyles} from "@material-ui/core";
 

@@ -1,27 +1,28 @@
 import React, {useEffect} from 'react';
 import {connect} from 'react-redux';
 
-import {Card, CardActions, CardContent, Typography} from "@material-ui/core";
+import {Card, CardActions, CardContent, makeStyles, Typography} from "@material-ui/core";
 import Timer from "../Timer/Timer";
 import CopyButton from "../CopyButton";
 import {getLink} from "modules/moongo";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+const useStyles = makeStyles(theme => ({
+  card: {
+    width: '60em'
+  },
+}));
 
 const Result = props => {
-  useEffect(() => {
-    const fetchLink = async () => {
-      console.log(props);
-      let res = await getLink(props.match.params.word);
-      console.log(res);
-    };
+  const classes = useStyles();
 
-    fetchLink();
-  }, []);
-
-  return (
+  const renderLoading = (
     <div>
-
+      <CircularProgress/>
     </div>
-    /*
+  );
+
+  const renderResults = (
     <Card className={classes.card}>
       <CardContent>
         <Typography className={classes.title} color="textSecondary" gutterBottom>
@@ -39,8 +40,11 @@ const Result = props => {
         <CopyButton url={props.shortUrl} text="Copy"/>
       </CardActions>
     </Card>
+  );
 
-     */
+  return (
+    <div>
+    </div>
   )
 };
 

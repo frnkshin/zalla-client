@@ -1,6 +1,6 @@
 import firebase from 'firebase/app';
 import 'firebase/database';
-import {Shrinker} from "lib/Shrinker";
+import {Shrinker} from "modules/Shrinker";
 import * as config from 'config';
 
 class Firebase {
@@ -43,23 +43,23 @@ class Firebase {
     return new Promise((resolve, reject) => {
       let deleteTime = new Date(new Date().setDate(new Date().getDate() + 1));
       this.db.ref('urls').once('value', (snapshot) => {
-          this.retrieveDeleted().then((deletedID) => {
-            if (deletedID) {
-              let shortUrl = this.prefix + this.shrinker.encode(deletedID);
-              this.db.ref(`urls/${deletedID}`).set({'url': url, 'deleteTime': deleteTime});
+        this.retrieveDeleted().then((deletedID) => {
+          if (deletedID) {
+            let shortUrl = this.prefix + this.shrinker.encode(deletedID);
+            this.db.ref(`urls/${deletedID}`).set({'url': url, 'deleteTime': deleteTime});
+            resolve(shortUrl);
+          } else {
+            if (snapshot) {
+              let shortUrl = this.prefix + this.shrinker.encode(snapshot.numChildren());
+              this.db.ref(`urls/${snapshot.numChildren()}`).set({'url': url, 'deleteTime': deleteTime});
               resolve(shortUrl);
             } else {
-              if (snapshot) {
-                let shortUrl = this.prefix + this.shrinker.encode(snapshot.numChildren());
-                this.db.ref(`urls/${snapshot.numChildren()}`).set({'url': url, 'deleteTime': deleteTime});
-                resolve(shortUrl);
-              } else {
-                let shortUrl = this.prefix + this.shrinker.encode(0);
-                this.db.ref(`urls/0`).set({'url': url, 'deleteTime': deleteTime});
-                resolve(shortUrl);
-              }
+              let shortUrl = this.prefix + this.shrinker.encode(0);
+              this.db.ref(`urls/0`).set({'url': url, 'deleteTime': deleteTime});
+              resolve(shortUrl);
             }
-          })
+          }
+        })
       });
     });
   };

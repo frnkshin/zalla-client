@@ -1,11 +1,11 @@
 import React, {useEffect} from 'react';
-import firebase from "modules/Firebase";
 import {connect} from 'react-redux';
 import {Redirect, withRouter} from 'react-router-dom';
 import {handleComplete, handleError, setUrl} from "components/Linker/actions";
 
 import CircularProgress from '@material-ui/core/CircularProgress';
-import {makeStyles} from "@material-ui/core";
+import {makeStyles, Typography} from "@material-ui/core";
+import {getLink} from "modules/moongo";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -20,27 +20,45 @@ const Linker = props => {
   const classes = useStyles();
 
   useEffect(() => {
-    setTimeout(() => {
-      firebase.expand(props.match.params.code)
-        .then(({url}) => {
-          if (!url.includes('https://') || !url.includes('http://')) {
-            url = `https://${url}`;
-          }
+    const asyncGetLink = async () => {
+      const res = await getLink(props.match.params.word);
+      if (res.data.success) {
+        props.setUrl(res.data.url);
+        setTimeout(() => {
           props.handleComplete(true);
-          props.setUrl(url);
-          document.location.assign(url);
-        })
-        .catch(err => {
-          props.handleComplete(true);
-          props.handleError(true);
-        });
-    }, 2000);
-  }, [props.match.params.code]);
+          window.location.replace(res.data.url)
+        }, 5000);
+      } else {
+        props.handleError(true)
+      }
+    };
+
+    asyncGetLink();
+  }, []);
+
+  const renderRedirect = (
+    <div className={classes.root}>
+      <CircularProgress />
+      <Typography>
+        Redirecting to {props.url}
+      </Typography>
+    </div>
+  );
+
+  const renderRedirectToRoot = (
+    <div>
+      <Redirect to='/' />
+      <CircularProgress />
+      <Typography>
+        Link does not exist. Redirecting to zal.la
+      </Typography>
+    </div>
+  );
 
   return (
     <div className={classes.root}>
-      {props.isError && <Redirect to={{pathname: "/", state: {bar:{show: true, msg: "No URL found"}}}} />}
-      {!props.isComplete && <CircularProgress /> }
+      {!props.isComplete && renderRedirect}
+      {props.isError && renderRedirectToRoot}
     </div>
   )
 };

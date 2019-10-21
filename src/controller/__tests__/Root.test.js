@@ -1,7 +1,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
-import Root from 'containers/Root';
-import URLBox from "components/UrlBox";
+import Root from 'controller/Root/Root';
+import URLBox from "components/Form";
 import {NotificationBar} from "components/MainBar";
 
 let wrapped;

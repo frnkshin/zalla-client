@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {connect} from 'react-redux';
+import {withRouter} from "react-router";
+import {makeStyles} from "@material-ui/core";
 
 import MainBar from "components/MainBar";
-import UrlBox from "components/UrlBox/UrlBox";
-import {Redirect} from "react-router";
-import {makeStyles} from "@material-ui/core";
+import ShortenerForm from "components/Form/Form";
+import Result from "controller/Result/Result";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -16,22 +17,26 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: '100%',
     transform: `translate(-50%, -50%)`
   }
 }));
 
-const Root = () => {
+const Root = (props) => {
   const classes = useStyles();
+
+  useEffect(() => {
+    console.log(props.route);
+  }, []);
+
   return (
     <div className={classes.root}>
-      {<Redirect to='/'/>}
       <MainBar/>
       <div className={classes.content}>
-        <UrlBox/>
+        {props.route === "/" && <ShortenerForm />}
+        {props.route === "/results" && <Result word={props.match.params.word}/>}
       </div>
     </div>
   );
 };
 
-export default connect()(Root);
+export default withRouter(connect()(Root));

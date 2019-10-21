@@ -1,6 +1,6 @@
 import React from 'react';
 import {mount} from 'enzyme';
-import URLBox from "components/UrlBox";
+import URLBox from "components/Form";
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
