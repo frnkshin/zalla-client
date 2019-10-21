@@ -2,7 +2,7 @@ import * as config from "../config";
 
 export class Shrinker {
   constructor() {
-    this.ALPHABET = config.shrinker.alphabet;
+    this.ALPHABET = config.alphabet;
     this.BASE = this.ALPHABET.length;
   }
 

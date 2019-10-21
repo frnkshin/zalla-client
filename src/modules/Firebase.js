@@ -1,13 +1,13 @@
-import * as firebase from 'firebase';
+import firebase from 'firebase/app';
 import 'firebase/database';
-import URL from 'url';
-import {Shrinker} from "lib/Shrinker";
+import {Shrinker} from "modules/Shrinker";
+import * as config from 'config';
 
-export default class Firebase {
+class Firebase {
   constructor(config) {
     this.fb = firebase.initializeApp(config);
     this.db = firebase.database();
-    this.prefix = "sh-nk.me/";
+    this.prefix = "zal.la/";
     this.shrinker = new Shrinker();
   }
 
@@ -43,47 +43,39 @@ export default class Firebase {
     return new Promise((resolve, reject) => {
       let deleteTime = new Date(new Date().setDate(new Date().getDate() + 1));
       this.db.ref('urls').once('value', (snapshot) => {
-          this.retrieveDeleted().then((deletedID) => {
-            if (deletedID) {
-              let shortUrl = this.prefix + this.shrinker.encode(deletedID);
-              this.db.ref(`urls/${deletedID}`).set({'url': url, 'deleteTime': deleteTime});
+        this.retrieveDeleted().then((deletedID) => {
+          if (deletedID) {
+            let shortUrl = this.prefix + this.shrinker.encode(deletedID);
+            this.db.ref(`urls/${deletedID}`).set({'url': url, 'deleteTime': deleteTime});
+            resolve(shortUrl);
+          } else {
+            if (snapshot) {
+              let shortUrl = this.prefix + this.shrinker.encode(snapshot.numChildren());
+              this.db.ref(`urls/${snapshot.numChildren()}`).set({'url': url, 'deleteTime': deleteTime});
               resolve(shortUrl);
             } else {
-              if (snapshot) {
-                let shortUrl = this.prefix + this.shrinker.encode(snapshot.numChildren());
-                this.db.ref(`urls/${snapshot.numChildren()}`).set({'url': url, 'deleteTime': deleteTime});
-                resolve(shortUrl);
-              } else {
-                let shortUrl = this.prefix + this.shrinker.encode(0);
-                this.db.ref(`urls/0`).set({'url': url, 'deleteTime': deleteTime});
-                resolve(shortUrl);
-              }
+              let shortUrl = this.prefix + this.shrinker.encode(0);
+              this.db.ref(`urls/0`).set({'url': url, 'deleteTime': deleteTime});
+              resolve(shortUrl);
             }
-          })
+          }
+        })
       });
     });
   };
 
   expand = (code) => {
-    let url;
     let id = this.shrinker.decode(code);
     return new Promise((resolve, reject) => {
       this.db.ref(`urls/${id}`).once('value', (snapshot) => {
-        if (snapshot.val() && snapshot.val().url) {
-          url = snapshot.val().url;
-          if (!url.includes('http://') || !url.includes('https://')) {
-            url = `https://${url}`;
-          }
-          try {
-            new URL(url);
-            resolve(url);
-          } catch (err) {
-            reject(null)
-          }
+        if (snapshot.val()) {
+          resolve(snapshot.val());
         } else {
-          reject(null);
+          reject("This URL is not available");
         }
       });
     });
   };
 }
+
+export default new Firebase(config.firebase);
