@@ -5,7 +5,7 @@ export const createLink = (word, url) => {
   let data = {word: word, url: url};
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      Axios.post(`${SERVER_URL}/api/link`, data)
+      Axios.post(`${SERVER_URL}/link`, data)
         .then(res => {
           resolve(res);
         })
@@ -19,7 +19,7 @@ export const createLink = (word, url) => {
 export const getLink = (word) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      Axios.get(`${SERVER_URL}/api/link/${word}`)
+      Axios.get(`${SERVER_URL}/link/${word}`)
         .then(res => {
           resolve(res);
         })
